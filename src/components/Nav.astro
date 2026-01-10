@@ -1,0 +1,13 @@
+---
+import { getCollection } from 'astro:content';
+import { slugify } from '../lib/utils';
+
+const categories = await getCollection('categories');
+---
+
+<nav>
+  <a href="/">Home</a>
+  {categories.map((cat) => (
+    <a href={`/category/${slugify(cat.data.name)}`}>{cat.data.name}</a>
+  ))}
+</nav>

@@ -1,16 +1,19 @@
 ---
 import { getCollection } from 'astro:content';
-import Nav from '../components/Nav.astro';
-import { getOptimizedImageUrl, getResponsiveSrcSet } from '../lib/utils';
+import Nav from '../../components/Nav.astro';
+import { slugify, getOptimizedImageUrl, getResponsiveSrcSet } from '../../lib/utils';
 
-const infoEntries = await getCollection('info');
-const info = infoEntries[0]?.data;
+export async function getStaticPaths() {
+  const categories = await getCollection('categories');
 
-const imageCollections = await getCollection('imageCollections');
-const featuredCollection = imageCollections.find(
-  (col) => col.data.name === 'Homepage Featured Images'
-);
-const featuredImages = featuredCollection?.data.images ?? [];
+  return categories.map((category) => ({
+    params: { slug: slugify(category.data.name) },
+    props: { category },
+  }));
+}
+
+const { category } = Astro.props;
+const images = category.data.images ?? [];
 ---
 
 <!doctype html>
@@ -20,20 +23,17 @@ const featuredImages = featuredCollection?.data.images ?? [];
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <meta name="viewport" content="width=device-width" />
     <meta name="generator" content={Astro.generator} />
-    <title>{info?.title ?? 'Portfolio'}</title>
+    <title>{category.data.name}</title>
   </head>
   <body>
     <header>
-      <h1>{info?.title}</h1>
       <Nav />
-      {info?.instagram && <a href={info.instagram}>Instagram</a>}
-      {info?.email && <a href={`mailto:${info.email}`}>{info.email}</a>}
     </header>
 
     <main>
+      <h1>{category.data.name}</h1>
       <section>
-        <h2>Featured Images</h2>
-        {featuredImages.map((img) => (
+        {images.map((img) => (
           <figure>
             <img
               src={getOptimizedImageUrl(img.photo.url, { size: 'large' })}
